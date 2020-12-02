@@ -1,5 +1,5 @@
 module.exports = {
-	name: 'init',
+	name: 'start',
 	description: 'initializes the secret hitler instance',
 	execute(message, args) {
         message.channel.send('Initializing a new game. React to this post if you are interested in playing.');
