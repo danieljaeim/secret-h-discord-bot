@@ -1,15 +1,36 @@
+/** Dependencies */
+const Discord = require('discord.js');
+
+/** Embeds */
+const exampleEmbed = require('../embeds/startEmbed');
+
 module.exports = {
   name: "start",
   description: "initializes the secret hitler instance",
   execute(client, message, args) {
-        const hostName = message.author.username;
-        message.guild.channels.create(`${hostName}'s-secret-hitler-game`, {
-                type: 'text'
+    let hostName = message.author.username;
+    hostName = hostName.split(' ').join('-');
+    let hostChannelName = `${hostName}-secret-hitler-game`;
+
+    /** Create the text-channel that will host the game. If the text channel already exists, do not create it. */
+    console.log('hostChannel: ', hostChannelName)
+    if (
+      !message.guild.channels.cache.some((c) => {
+        c.name.trim()
+        return c.name == hostChannelName;
+      })
+    ) {
+      message.guild.channels
+        .create(hostChannelName, {
+          type: "text",
         })
-        .then(channel => {
-                console.log(channel.name)
-        })
-        message.channel.send(`${hostName} has started a Secret Hitler game. Join the new text-channel made by ${hostName}!`
+        .then((channel) => {
+          console.log("created a new room called " + channel.name);
+        });
+    }
+
+    message.channel.send(
+      exampleEmbed
     );
     // Here we will initialize a new game of secret hitler.
 
