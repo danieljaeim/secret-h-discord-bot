@@ -1,8 +1,4 @@
-const Discord = require('discord.js');
-
-/** secret-hitler-img */
-
-module.exports = createStartEmbed = (username, channel) => new Discord.MessageEmbed()
+module.exports = createLobbyEmbed = (username, channel) => new Discord.MessageEmbed()
 	.setColor('#0099ff')
 	.setTitle(`Secret Hitler Starting!`)
 	.setAuthor(username, 'https://i.imgur.com/wSTFkRM.png', 'https://discord.js.org')
