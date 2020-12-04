@@ -2,7 +2,8 @@
 const Discord = require("discord.js");
 
 /** Embeds */
-const createEmbed = require("../embeds/startEmbed");
+const startEmbed = require("../embeds/startEmbed");
+const lobbyEmbed = require("../embeds/lobbyEmbed");
 
 module.exports = {
   name: "start",
@@ -21,16 +22,22 @@ module.exports = {
 	  .then(channel => {
 		console.log("created a new room called " + channel);
 		hostChannel = channel;
-		message.channel.send(createEmbed(hostName, hostChannel));
+		message.channel.send(startEmbed(hostName, hostChannel));
+		createLobbyEmbed(hostName, channel);
 	  })
     } else {
       hostChannel = message.guild.channels.cache.find(
         (c) => c.name == hostChannelName
 	  );
-	  message.channel.send(createEmbed(hostName, hostChannel));
+	  message.channel.send(startEmbed(hostName, hostChannel));
+	  createLobbyEmbed(hostName, channel);
 	}
 	// Here we will initialize a new game of secret hitler.
-
+	const createLobbyEmbed = (hostName, hostCHannel) => {
+		console.log('creating lobby embed')
+		const lobbyMessage = lobbyEmbed(hostName, hostChannel);
+		hostChannel.send(lobbyMessage)
+	}
     /**
      * 1. Send an embed in the channel that we just made.
      * 2. People can enter the text channel and type @sh.join to enter the game's queue

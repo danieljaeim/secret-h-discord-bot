@@ -1,6 +1,6 @@
+const Discord = require('discord.js');
+
 module.exports = createLobbyEmbed = (username, channel) => new Discord.MessageEmbed()
 	.setColor('#0099ff')
-	.setTitle(`Secret Hitler Starting!`)
-	.setAuthor(username, 'https://i.imgur.com/wSTFkRM.png', 'https://discord.js.org')
-	.setDescription(`A secret hitler game is starting in the <#${channel.id}> text channel soon.`)
-	.setThumbnail('https://i.imgur.com/1jE7uUZ.jpg')
+	.setTitle(`Secret Hitler Lobby`)
+	.setDescription(`The secret hitler game hosted by ${username} starts soon. React to this post, and once at least 5 people join, the game will begin!`)
