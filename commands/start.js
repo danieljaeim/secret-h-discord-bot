@@ -4,6 +4,7 @@ const Discord = require("discord.js");
 /** Embeds */
 const startEmbed = require("../embeds/startEmbed");
 const lobbyEmbed = require("../embeds/lobbyEmbed");
+const renderGameStateEmbed = require("../embeds/gametableEmbed");
 const Game = require('../game');
 
 const createLobbyEmbed = (client, author, hostChannel) => {
@@ -18,6 +19,8 @@ const createLobbyEmbed = (client, author, hostChannel) => {
             const collector = m.createReactionCollector(filter, { dispose: true });
             collector.on('collect', (r, u) => {
                 if (r.emoji.name == '✅' && playerlist.length > 1 && u.username == author.username) {
+                    console.log(client.channels.cache)
+                    console.log(hostChannel)
                     gameStart(client, author, hostChannel, playerlist)
                 } else if (r.emoji.name == '👍') {
                     let players = r.users.cache.map(r => r);
@@ -66,66 +69,13 @@ const gameStart = (client, author, hostChannel, players) => {
         p.send(`\n\n\n Your role is fascists. Hitler is ${newGame.hitler.username}. Protect him at all cost. \n\n\n `);
     }
 
-    generateTableEmbed(players, hostChannel);
+    renderGameStateEmbed(author, hostChannel, newGame);
 
     /**
      * DM TO EACH PLAYER THEIR ROLE
      * DONE
      * CREATE the starting embed in the game-lobby!
      */
-
-}
-
-const generateTableEmbed = (players, hostChannel) => {
-    const exampleEmbed = {
-        color: 0x0099ff,
-        title: 'Some title',
-        url: 'https://discord.js.org',
-        author: {
-            name: 'Some name',
-            icon_url: 'https://i.imgur.com/wSTFkRM.png',
-            url: 'https://discord.js.org',
-        },
-        description: 'Some description here',
-        thumbnail: {
-            url: 'https://i.imgur.com/wSTFkRM.png',
-        },
-        fields: [
-            {
-                name: 'Regular field title',
-                value: 'Some value here',
-            },
-            {
-                name: '\u200b',
-                value: '\u200b',
-                inline: false,
-            },
-            {
-                name: 'Inline field title',
-                value: 'Some value here',
-                inline: true,
-            },
-            {
-                name: 'Inline field title',
-                value: 'Some value here',
-                inline: true,
-            },
-            {
-                name: 'Inline field title',
-                value: 'Some value here',
-                inline: true,
-            },
-        ],
-        image: {
-            url: 'https://i.imgur.com/wSTFkRM.png',
-        },
-        timestamp: new Date(),
-        footer: {
-            text: 'Some footer text here',
-            icon_url: 'https://i.imgur.com/wSTFkRM.png',
-        },
-    };
-    hostChannel.send({ embed: exampleEmbed})
 
 }
 
