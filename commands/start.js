@@ -5,6 +5,12 @@ const Discord = require("discord.js");
 const startEmbed = require("../embeds/startEmbed");
 const lobbyEmbed = require("../embeds/lobbyEmbed");
 const renderGameStateEmbed = require("../embeds/gametableEmbed");
+const liberalRoleEmbed = require('../embeds/liberalRoleEmbed');
+const fascistRoleEmbed = require('../embeds/fascistRoleEmbed');
+const hitlerRoleEmbed = require('../embeds/hitlerRoleEmbed');
+
+const colorText = require('../data/colortext');
+
 const Game = require('../game');
 
 const createLobbyEmbed = (client, author, hostChannel) => {
@@ -19,8 +25,7 @@ const createLobbyEmbed = (client, author, hostChannel) => {
             const collector = m.createReactionCollector(filter, { dispose: true });
             collector.on('collect', (r, u) => {
                 if (r.emoji.name == '✅' && playerlist.length > 1 && u.username == author.username) {
-                    console.log(client.channels.cache)
-                    console.log(hostChannel)
+                    m.delete();
                     gameStart(client, author, hostChannel, playerlist)
                 } else if (r.emoji.name == '👍') {
                     let players = r.users.cache.map(r => r);
@@ -29,7 +34,6 @@ const createLobbyEmbed = (client, author, hostChannel) => {
                     playerlist = players;
                     if (playerlist.length >= 2) {
                         m.react('✅')
-                        // m.reply(`The game can begin, once ${author} clicks the ✅`)
                     }
                 }
             });
@@ -48,25 +52,22 @@ const createLobbyEmbed = (client, author, hostChannel) => {
 };
 
 const gameStart = (client, author, hostChannel, players) => {
-    console.log(`Author: ${author}, HostChannel: ${hostChannel}, PlayerList: ${players}`)
     let newGame = new Game(client, author, hostChannel, players);
     let liberals = newGame.getLiberalPlayers();
     let fascists = newGame.getFascistPlayers();
 
-    // console.log("LIBERALS, ", liberals)
-    // console.log("FASCISTS, ", fascists)
-
     for (let p of liberals) {
-        p.send(`${p}. You are a liberal. May you catch Hitler and those filthy fascists!`);
+        p.send('-----------------------------------------------------')
+        p.send(liberalRoleEmbed(p))
     }
 
     for (let p of fascists) {
-        if (newGame.hitler.username == p.username) {
-            p.send(`\n\n\n My fuhreh ${newGame.hitler}, you are Hitler. Oust the liberals! We have sent ${fascists.length - 1} fascists to protect you. \n
-            Their names are ${fascists.filter((f => f.username != newGame.hitler.username)).join(', ')}. May you reign supreme! \n\n\n `);
-            continue;
+        p.send('-----------------------------------------------------')
+        if (p.username != newGame.hitler.username) {
+            p.send(fascistRoleEmbed(p, fascists, newGame.hitler));
+        } else {
+            p.send(hitlerRoleEmbed(p, fascists, newGame.hitlerKnows));
         }
-        p.send(`\n\n\n Your role is fascists. Hitler is ${newGame.hitler.username}. Protect him at all cost. \n\n\n `);
     }
 
     renderGameStateEmbed(author, hostChannel, newGame);
@@ -76,7 +77,6 @@ const gameStart = (client, author, hostChannel, players) => {
      * DONE
      * CREATE the starting embed in the game-lobby!
      */
-
 }
 
 module.exports = {
@@ -94,7 +94,9 @@ module.exports = {
                 .then((channel) => {
                     console.log("created a new room called " + channel);
                     hostChannel = channel;
-                    message.channel.send(startEmbed(message.author, ));
+                    if (message.channel.id !== hostChannel.id) {
+                        message.channel.send(startEmbed(message.author, hostChannel));
+                    }
                     createLobbyEmbed(client, message.author, hostChannel);
                 });
         }
@@ -103,7 +105,9 @@ module.exports = {
                 (c) => c.name == hostChannelName
             );
             console.log('starting game in room called ' + hostChannel)
-            message.channel.send(startEmbed(message.author, hostChannel));
+            if (message.channel.id !== hostChannel.id) {
+                message.channel.send(startEmbed(message.author, hostChannel));
+            }
             createLobbyEmbed(client, message.author, hostChannel);
         }
     }
