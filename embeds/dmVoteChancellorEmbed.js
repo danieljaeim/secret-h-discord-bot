@@ -8,7 +8,7 @@ module.exports = dmVoteChancellorEmbed = (gamestate, chancellorNominee, player) 
 	let embed = new Discord.MessageEmbed()
 	.setColor('#0099ff')
 	.setTitle(`Do you agree?`)
-	.setDescription(`${gamestate.president} wants to be president. \n ${chancellorNominee} will be their chancellor.\n You get one vote. Make it count.`)
+	.setDescription(`${gamestate.president} wants to stay president. \n\n ${chancellorNominee} will be their chancellor.\n\n You must choose, do you want to vote them in?`)
 	.setThumbnail('https://i.imgur.com/1jE7uUZ.jpg') // vote icon here
 
 	if (areBothFascists) {

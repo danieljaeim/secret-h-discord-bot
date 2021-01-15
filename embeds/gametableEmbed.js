@@ -2,12 +2,23 @@ const Discord = require('discord.js');
 const createVoteChancellorEmbed = require('../embeds/voteChancellorEmbed');
 const notifyChancellorCandidate = require('../embeds/notifyChancellorCand');
 const voteResultsEmbed = require('../embeds/voteResultsEmbed');
-const sendPresidentCardsEmbed = require('../embeds/sendPresidentCards');
+const sendPresidentCardsEmbed = require('./sendPresidentCardsEmbed');
 const sendChancellorCardsEmbed = require('../embeds/sendChancellorCardsEmbed');
 const dmVoteChancellorEmbed = require('../embeds/dmVoteChancellorEmbed');
 const roleNotificationEmbed = require('../embeds/roleNotificationEmbed');
 const gameBoardEmbed = require('../embeds/boardEmbed');
 const makeCaseEmbed = require('../embeds/makeCaseEmbed');
+const chancellorPickingEmbed = require('../embeds/chancellorPickingEmbed');
+const whichCardEmbed = require('../embeds/whichCardPlacedEmbed');
+const gameEndEmbed = require('../embeds/gameEndResultsEmbed');
+const presidentInvestigationEmbed = require('../embeds/presidentInvestigateEmbed');
+const presidentInvestigationResult = require('../embeds/presidentInvestigationResult');
+const topThreeCardsEmbed = require('../embeds/topThreeCardsEmbed');
+const topThreeNotifications = require('../embeds/topThreeNotifications');
+const presidentPickingEmbed = require('../embeds/presidentPickingNotification');
+const presidentKillNotifyEmbed = require('../embeds/presidentKillNotifyEmbed');
+const hitlerWasSlain = require('../embeds/hitlerWasSlainEmbed');
+
 
 const gamestages = require('../data/gamestages');
 
@@ -16,18 +27,20 @@ const gamestages = require('../data/gamestages');
 module.exports = renderGameStateEmbed = (author, hostChannel, gamestate) => {
     const gbEmbed = gameBoardEmbed(gamestate);
 
-    hostChannel.send(roleNotificationEmbed())
+    hostChannel.send(roleNotificationEmbed(gamestate, false))
         .then(m => {
             setTimeout(function() {
-                m.edit(roleNotificationEmbed(true))
+                m.edit(roleNotificationEmbed(gamestate, true))
             }, 3500);
             setTimeout(function() {
                 hostChannel.send(gbEmbed)
-                    .then(m => gamestate.embed = m)
-                return voteForChancellor(hostChannel, gamestate);
+                    .then(m => {
+                        gamestate.embed = m
+                        // m.pin();
+                        voteForChancellor(hostChannel, gamestate);
+                    })
             }, 5000)
         });
-    // hostChannel.send({ embed: gameEmbed})
 }
 
 var emojibank = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
@@ -37,14 +50,14 @@ const voteForChancellor = (hostChannel, gamestate) => {
     hostChannel.send({ embed: voteEmbed })
         .then(m => {
             let lessThanFivePlayers = gamestate.players.length <= 5;
-            let candidates = gamestate.players.filter(p => p.username !== gamestate.president.username &&
-                p.username !== gamestate.lastChancellor.username && (p.username !== gamestate.lastPresident.username || lessThanFivePlayers));
+            let candidates = gamestate.players.filter(p => p.id !== gamestate.president.id &&
+                p.id !== gamestate.lastChancellor.id && (p.id !== gamestate.lastPresident.id || lessThanFivePlayers));
 
             for (let i = 0; i < candidates.length; i++) {
                 m.react(emojibank[i]);
             }
             const filter = (res, user) => {
-                return user.username == gamestate.president.username;
+                return user.id == gamestate.president.id;
             }
             const collector = m.createReactionCollector(filter, { dispose: true, max: 1 });
             collector.on('collect', (r, u) => {
@@ -54,6 +67,8 @@ const voteForChancellor = (hostChannel, gamestate) => {
                 let yesVotes = 0;
                 let noVotes = 0;
                 let votedPlayers = [];
+                let supporters = [];
+                let opposers = [];
                 let votes = { yesVotes, noVotes }
                 let notifyEmbed;
 
@@ -68,13 +83,16 @@ const voteForChancellor = (hostChannel, gamestate) => {
                         notifyEmbed = m;
                         setTimeout(function() {
                             notifyEmbed.edit(makeCaseEmbed(gamestate, chancellorNominee, 2))
+                                .then(notifyEmbed = m)
                         }, 2000)
                         setTimeout(function() {
                             notifyEmbed.edit(makeCaseEmbed(gamestate, chancellorNominee, 3))
+                                .then(notifyEmbed = m)
                         }, 4000)
                         setTimeout(function() {
                             notifyEmbed.edit({ embed: notifyChancellorCandidate(gamestate, chancellorNominee, votedPlayers, votes) })
-                        }, 10000);
+                                .then(notifyEmbed = m)
+                        }, 6000);
                     })
 
                 for (let p of gamestate.players) {
@@ -82,51 +100,85 @@ const voteForChancellor = (hostChannel, gamestate) => {
                         .then(dm => {
                             dm.react('✅');
                             dm.react('❌');
-                            const votefilter = (r, u) => (r.emoji.name == '✅' || r.emoji.name == '❌') && u.username == p.username;
+                            const votefilter = (r, u) => (r.emoji.name == '✅' || r.emoji.name == '❌') && u.id == p.id;
                             const votecollector = dm.createReactionCollector(votefilter, { max: 1} );
 
                             votecollector.on('collect', (r, u) => {
                                 if (r.emoji.name == '✅') {
                                     yesVotes += 1;
+                                    supporters.push(u.username);
                                 } else {
                                     noVotes += 1;
+                                    opposers.push(u.username)
                                 }
                                 dm.delete();
                                 votedPlayers.push(u);
                                 notifyEmbed.edit({ embed: notifyChancellorCandidate(gamestate, chancellorNominee, votedPlayers, { yesVotes, noVotes }) })
                                     .then(nm => notifyEmbed = nm);
 
-                                // CHECK HERE WHETHER EVERYONE HAS VOTED
                                 if (yesVotes + noVotes == gamestate.players.length) {
-                                    // create an embed notifying that either it went through or didn't
-
-                                    let voteSuccess = yesVotes >= Math.floor(gamestate.players.length / 2) + 1;
                                     notifyEmbed.delete();
 
+                                    let voteSuccess = yesVotes >= Math.floor(gamestate.players.length / 2) + 1;
                                     if (voteSuccess) {
+                                        gamestate.chancellorCandidate = chancellorNominee;
                                         gamestate.gamestage = gamestages.PCARDS;
-                                        hostChannel.send({ embed: voteResultsEmbed(gamestate, chancellorNominee, true) });
-                                        // send the president 3 cards, wait for his reply
-                                        sendPresidentCards(gamestate, chancellorNominee);
-                                        // send the chancellor the 2 other cards, wait for his reply
-                                        // announce the card and ask the next 
-
+                                        gamestate.board.resetCounters = 0;
+                                        gamestate.embed.edit(gameBoardEmbed(gamestate));
+                                        hostChannel.send({ embed: voteResultsEmbed(gamestate, chancellorNominee, supporters, opposers, true, false) })
+                                            .then(m => 
+                                                setTimeout(function() {
+                                                    m.edit(voteResultsEmbed(gamestate, chancellorNominee, supporters, opposers, true, true));
+                                                    sendPresidentCards(gamestate, chancellorNominee, m, supporters, opposers);
+                                                }, 5000));
                                     } else {
                                         gamestate.board.resetCounters++;
+                                        gamestate.chancellorCandidate = null;
                                         gamestate.gamestage = gamestages.PCHOOSE;
-                                        gamestate.embed.edit(gameBoardEmbed(gamestate));
+                                        gamestate.presidentIndex = (gamestate.presidentIndex + 1) % gamestate.playerOrder.length;
+                                        gamestate.president = gamestate.playerOrder[gamestate.presidentIndex];
+                                        gamestate.rotatePresidentToFront();
                                         hostChannel.send({ embed: voteResultsEmbed(gamestate, chancellorNominee, false) })
                                             .then(m => {
                                                 setTimeout(function() {
                                                     m.delete();
                                                     if (gamestate.board.resetCounters == 3) {
                                                         gamestate.board.resetCounters = 0;
-                                                        // do logic to add top card of the game to the board
+                                                        let chosenCard = gamestate.deck.shift();
+
+                                                        if (chosenCard == "L") {
+                                                            gamestate.board.liberalOnBoard++;
+                                                            gamestate.hostChannel.send(whichCardEmbed(true))
+                                                                .then(m => {
+                                                                    setTimeout(function() {
+                                                                        m.delete();
+                                                                    }, 3000)
+                                                                })
+                                        
+                                                            if (gamestate.board.liberalOnBoard == 5) {
+                                                                hostChannel.send(gameEndEmbed("L"));
+                                                                console.log('LIBERALS HAVE WON THE GAME!');
+                                                                return;
+                                                            }
+                                                        } else if (chosenCard == "F") {
+                                                            gamestate.board.fascistOnBoard++;
+                                                            gamestate.hostChannel.send(whichCardEmbed(false))
+                                                                .then(m => {
+                                                                    setTimeout(function() {
+                                                                        m.delete();
+                                                                    }, 3000)
+                                                                })
+                                                            if (gamestate.board.fascistOnBoard == 6) {
+                                                                // fascists win!
+                                                                hostChannel.send(gameEndEmbed("R"));
+                                                                console.log('FASCISTS HAVE WON THE GAME!');
+                                                                return;
+                                                            }
+                                                        }
                                                     }
-                                                    gamestate.presidentIndex = (gamestate.presidentIndex + 1) % gamestate.players.length;
-                                                    gamestate.president = gamestate.players[gamestate.presidentIndex];
+                                                    gamestate.embed.edit(gameBoardEmbed(gamestate));
                                                     return voteForChancellor(hostChannel, gamestate);
-                                                }, 8000)
+                                                }, 4000)
                                             });
                                     }
                                 }
@@ -139,10 +191,8 @@ const voteForChancellor = (hostChannel, gamestate) => {
 
 // could use a function that advances the game-state depending on outcome of the state
 
-const sendPresidentCards = (gamestate, chancellorAppointed) => {
-    gamestate.lastPresident = gamestate.president;
-    gamestate.lastChancellor = chancellorAppointed;
-    gamestate.board.resetCounters = 0;
+const sendPresidentCards = (gamestate, chancellorAppointed, presEmbed, supporters, opposers) => {
+    let cards = gamestate.deck.splice(-3);
 
     if (gamestate.deck.length <= 2) {
         gamestate.deck.cards.forEach(c => {
@@ -156,8 +206,6 @@ const sendPresidentCards = (gamestate, chancellorAppointed) => {
         gamestate.deck = gamestate.shuffleDeck(gamestate.discard.liberal, gamestate.discard.fascist);
     }
 
-    let cards = gamestate.deck.splice(-3);
-
     cards.forEach(c => {
         if (c == "L") {
             gamestate.discard.liberal++;
@@ -166,12 +214,12 @@ const sendPresidentCards = (gamestate, chancellorAppointed) => {
         }
     });
 
-    gamestate.president.send({ embed: sendPresidentCardsEmbed(gamestate.president, cards) })
+    gamestate.president.send({ embed: sendPresidentCardsEmbed(gamestate, cards) })
         .then(dm => {
             dm.react('1️⃣');
             dm.react('2️⃣');
             dm.react('3️⃣');
-            const votefilter = (r, u) => ['1️⃣', '2️⃣', '3️⃣'].includes(r.emoji.name) && u.username == gamestate.president.username;
+            const votefilter = (r, u) => ['1️⃣', '2️⃣', '3️⃣'].includes(r.emoji.name) && u.id == gamestate.president.id;
             const votecollector = dm.createReactionCollector(votefilter, { max: 1 });
 
             console.log(cards);
@@ -182,89 +230,178 @@ const sendPresidentCards = (gamestate, chancellorAppointed) => {
                 let deletedCard = cards.splice(chosenIndex, 1);
                 console.log(`${gamestate.president.username} has chosen to discard ${deletedCard}`);
                 dm.delete();
-
-                console.log(cards)
-
-                return sendChancellorCards(gamestate, chancellorAppointed, cards);
+                return sendChancellorCards(gamestate, chancellorAppointed, cards, presEmbed, supporters, opposers);
             })
         })
 }
 
-const sendChancellorCards = (gamestate, chancellorAppointed, cards) => {
+const sendChancellorCards = (gamestate, chancellorAppointed, cards, currentEmbed, supporters, opposers) => {
+    currentEmbed.edit(chancellorPickingEmbed(gamestate, supporters, opposers))
     chancellorAppointed.send({ embed: sendChancellorCardsEmbed(chancellorAppointed, cards) })
         .then(dm => {
             dm.react('1️⃣');
             dm.react('2️⃣');
-            const votefilter = (r, u) => ['1️⃣', '2️⃣'].includes(r.emoji.name) && u.username == chancellorAppointed.username;
+            const votefilter = (r, u) => ['1️⃣', '2️⃣'].includes(r.emoji.name) && u.id == chancellorAppointed.id;
             const votecollector = dm.createReactionCollector(votefilter, { max: 1 });
 
             votecollector.on('collect', (r, u) => {
                 let chosenIndex = ['1️⃣', '2️⃣'].findIndex(num => num == r.emoji.name);
                 let chosenCard = cards[chosenIndex];
-                let otherCard = cards[chosenIndex == 0 ? 1 : 0];
-
-                console.log(chosenCard, otherCard)
 
                 console.log(`${chancellorAppointed.username} has chosen to place ${chosenCard} on the board!`);
                 dm.delete();
 
-                if (otherCard == "L") {
-                    gamestate.discard.liberal++;
-                } else {
-                    gamestate.discard.fascist++;
-                }
-
                 if (chosenCard == "L") {
                     gamestate.board.liberalOnBoard++;
+                    currentEmbed.edit(whichCardEmbed(true))
+                        .then(m => {
+                            setTimeout(function() {
+                                m.delete();
+                            }, 3000)
+                        })
+
                     if (gamestate.board.liberalOnBoard == 5) {
                         // liberals win!
+                        hostChannel.send(gameEndEmbed("L"));
                         console.log('LIBERALS HAVE WON THE GAME!');
                         return;
                     }
-
-
-                } else {
+                } else if (chosenCard == "F") {
                     gamestate.board.fascistOnBoard++;
+                    currentEmbed.edit(whichCardEmbed(false))
+                        .then(m => {
+                            setTimeout(function() {
+                                m.delete();
+                            }, 3000)
+                        })
+
                     if (gamestate.board.fascistOnBoard == 6) {
                         // fascists win!
+                        hostChannel.send(gameEndEmbed("F"));
                         console.log('FASCISTS HAVE WON THE GAME!');
                         return;
                     }
 
-                    let fascistEvent = gamestate.board.fascistRuleset[gamestate.board.fascistOnBoard];
+                    let fascistEvent = gamestate.board.fascistRuleset[gamestate.board.fascistOnBoard - 1];
+                    let nonPresidents = gamestate.players.filter(p => p.id != gamestate.president.id);
                     switch (fascistEvent) {
-                        case (''):
+                        case ('  '):
                             break;
                         case ('PI'):
                             // current president investigates a player's identity
-                            break;
+                            gamestate.hostChannel.send(presidentInvestigationEmbed(gamestate, '', nonPresidents, false))
+                                .then(m => {
+                                    nonPresidents.forEach((p, i) => {
+                                        m.react(emojibank[i]);
+                                    })
+
+                                    const voteFilter = (r, u) => emojibank.includes(r.emoji.name) && u.id == gamestate.president.id;
+                                    const votecollector = m.createReactionCollector(voteFilter, {max: 1});
+
+                                    votecollector.on('collect', (r, u) => {
+                                        let chosenIndex = emojibank.findIndex(num => num == r.emoji.name);
+                                        let chosenUser = nonPresidents[chosenIndex];
+                                        gamestate.president.send(presidentInvestigationResult(chosenUser));
+
+                                        setTimeout(function() {
+                                            m.edit(presidentInvestigationEmbed(gamestate, chosenUser, true));
+                                            resetRound(gamestate, chancellorAppointed);
+                                        }, 5000)
+                                    })
+                                });
+                            return;
                         case ('PE'):
                             // current president gets to examine the top three cards
-                            break;
-                        case ('PE'):
-                            // current president gets to pick the next president
-                            break;
+                            gamestate.hostChannel.send(topThreeNotifications(gamestate))
+                                .then(m => {
+                                    gamestate.president.send(topThreeCardsEmbed(gamestate));
+                                    setTimeout(function() {
+                                        m.delete();
+                                        resetRound(gamestate, chancellorAppointed);
+                                    }, 5000)
+                                });
+                            return;
+                        case ('PP'):
+                            gamestate.hostChannel.send(presidentPickingEmbed(gamestate, null, false))
+                                .then(m => {
+                                    nonPresidents.forEach((p, i) => {
+                                        m.react(emojibank[i]);
+                                    })
+
+                                    const voteFilter = (r, u) => emojibank.includes(r.emoji.name) && u.id == gamestate.president.id;
+                                    const votecollector = m.createReactionCollector(voteFilter, {max: 1});
+
+                                    votecollector.on('collect', (r, u) => {
+                                        let chosenIndex = emojibank.findIndex(num => num == r.emoji.name);
+                                        let chosenUser = nonPresidents[chosenIndex];
+                                        m.edit(presidentPickingEmbed(gamestate, chosenUser, true));
+
+                                        setTimeout(function() {
+                                            resetRound(gamestate, chancellorAppointed, chosenUser);
+                                        }, 5000)
+                                    })
+                                })
+                            return;
                         case ('PK'):
-                            // current president gets to shoot a player
-                            break;
+                            gamestate.hostChannel.send(presidentKillNotifyEmbed(gamestate, null, false))
+                                .then(m => {
+                                    nonPresidents.forEach((p, i) => {
+                                        m.react(emojibank[i]);
+                                    })
+
+                                    const voteFilter = (r, u) => emojibank.includes(r.emoji.name) && u.id == gamestate.president.id;
+                                    const votecollector = m.createReactionCollector(voteFilter, {max: 1});
+
+                                    votecollector.on('collect', (r, u) => {
+                                        let chosenIndex = emojibank.findIndex(num => num == r.emoji.name);
+                                        let chosenUser = nonPresidents[chosenIndex];
+                                        m.edit(presidentKillNotifyEmbed(gamestate, chosenUser, true));
+
+                                        if (chosenUser.id == gamestate.hitler.id) {
+                                            console.log('liberals have killed hitler!');
+                                            hostChannel.send(gameEndEmbed("L"));
+                                            return;
+                                        }
+
+                                        let playerIndex = gamestate.players.find(p => p.id == chosenUser.id);
+                                        gamestate.players.splice(playerIndex, 1);
+
+                                        setTimeout(function() {
+                                            resetRound(gamestate, chancellorAppointed, chosenUser);
+                                        }, 5000)
+                                    })
+                                })
+                            return;
                         default:
                             break;
                     }
                     // if this triggers a fascist ruleset, set up the event
                 }
 
-                // edit gamestate cards data...
-
-                /* send the unchosen card to the discard pile
-                    place the chosen card on the board
-                */
-
-                gamestate.presidentIndex = (gamestate.presidentIndex + 1) % gamestate.players.length;
-                gamestate.president = gamestate.players[gamestate.presidentIndex];
-
-                return voteForChancellor(gamestate.hostChannel, gamestate);
+                resetRound(gamestate, chancellorAppointed);
             })
         })
+}
+
+const resetRound = (gamestate, chancellorAppointed, pickedPresident) => {
+    gamestate.lastPresident = gamestate.president;
+    gamestate.lastChancellor = chancellorAppointed;
+    gamestate.board.resetCounters = 0;
+
+    if (pickedPresident) {
+        gamestate.president = pickedPresident;
+    } else {
+        gamestate.presidentIndex = (gamestate.presidentIndex + 1) % gamestate.playerOrder.length;
+        gamestate.president = gamestate.playerOrder[gamestate.presidentIndex];
+    }
+    gamestate.rotatePresidentToFront();
+    gamestate.chancellorCandidate = undefined;
+    setTimeout(async function() {
+        await gamestate.embed.edit(gameBoardEmbed(gamestate));
+        setTimeout(function() {
+            return voteForChancellor(gamestate.hostChannel, gamestate);
+        }, 5000)
+    }, 3000)
 }
 
 

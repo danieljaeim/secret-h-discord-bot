@@ -34,7 +34,7 @@ module.exports = class Game {
             // there are 5 liberal slots
             liberalOnBoard: 0,
             // there are 6 fascist slots, veto unlocks once there are 5 fascist cards taken
-            fascistOnBoard: 0,
+            fascistOnBoard: 2,
             resetCounters: 0,
             fascistRuleset: this.pickFascistRuleset(players)
         }
@@ -49,8 +49,8 @@ module.exports = class Game {
         this.chancellorCandidate = undefined;
 
         // elected president and chancellor
-        this.lastPresident = {username: undefined}
-        this.lastChancellor = {username: undefined}
+        this.lastPresident = {id: undefined}
+        this.lastChancellor = {id: undefined}
 
         this.getLiberalPlayers = _ => this.playerInfo.liberals;
         this.getFascistPlayers = _ => this.playerInfo.fascists;
@@ -73,14 +73,14 @@ module.exports = class Game {
      */
 
     pickFascistRuleset = players => {
-        switch(players.length + 2) {
+        switch(players.length) {
             case(5 || 6):
                 this.hitlerKnows = true;
-                return ['', '', 'PE', 'PK', 'PK', 'W']
+                return ['  ', '  ', 'PE', 'PK', 'PK', ' ']
             case(7 || 8):
-                return ['', 'PI', 'PP', 'PK', 'PK', 'W']
+                return ['  ', 'PI', 'PP', 'PK', 'PK', ' ']
             case(9 || 10):
-                return ['PI', 'PI', 'PP', 'PK', 'PK', 'W']
+                return ['PI', 'PI', 'PP', 'PK', 'PK', ' ']
             default:
                 break;
         }
@@ -93,8 +93,7 @@ module.exports = class Game {
 
         let fascists = [];
         let liberals = [];
-        // let fascCount = [2, 2, 3, 3, 4, 4][players.length];
-        let fascCount = 1;
+        let fascCount = [2, 2, 3, 3, 4, 4][players.length - 5];
         
         while (fascists.length < fascCount) {
             let rand = Math.floor(Math.random() * playersCpy.length);
@@ -113,7 +112,7 @@ module.exports = class Game {
             }
         }
 
-        let hitler = fascists[Math.floor(Math.random() * fascists.length)]
+        let hitler = fascists[Math.floor(Math.random() * fascists.length)];
 
         return {
             liberals,

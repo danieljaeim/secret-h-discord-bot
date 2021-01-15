@@ -4,7 +4,8 @@ const Discord = require('discord.js');
 
 module.exports = makeYourCaseEmbed = (gamestate, chancellorCandidate, step) => {
 
-    let titleStr = step == 1 ? 'A Chancellor Has Been Chosen.' : step == 2 ? `President ${gamestate.president.username} has chosen Chancellor ${chancellorCandidate.username}!` : "Begin making your case to the people! Voting will begin soon."
+    let titleStr = step == 1 ? 'A Chancellor Has Been Chosen.' : step == 2 ? `President ${gamestate.president.username} and Chancellor ${chancellorCandidate.username}!` 
+    : "Begin making your case now! Voting will begin very soon."
     return new Discord.MessageEmbed()
 	.setColor('#0099ff')
 	.setTitle(titleStr)

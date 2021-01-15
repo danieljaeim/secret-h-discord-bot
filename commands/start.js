@@ -24,15 +24,15 @@ const createLobbyEmbed = (client, author, hostChannel) => {
             m.react('👍');
             const collector = m.createReactionCollector(filter, { dispose: true });
             collector.on('collect', (r, u) => {
-                if (r.emoji.name == '✅' && playerlist.length > 1 && u.username == author.username) {
+                if (r.emoji.name == '✅' && playerlist.length >= 5 && u.username == author.username) {
                     m.delete();
-                    gameStart(client, author, hostChannel, playerlist)
+                    gameStart(client, author, hostChannel, playerlist);
                 } else if (r.emoji.name == '👍') {
                     let players = r.users.cache.map(r => r);
                     players = players.filter(p => p.username != 'Secret-Hitler-Bot')
                     m.edit(lobbyEmbed(author, players));
                     playerlist = players;
-                    if (playerlist.length >= 2) {
+                    if (playerlist.length >= 5) {
                         m.react('✅')
                     }
                 }
