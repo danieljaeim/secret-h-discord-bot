@@ -26,8 +26,8 @@ module.exports = class Game {
         this.discard = { liberal: 0, fascist: 0 }
 
         this.factionCount = {
-            liberal: [3, 4, 4, 5, 5, 6][players.length],
-            fascist: [2, 2, 3, 3, 4, 4][players.length],
+            liberal: [3, 4, 4, 5, 5, 6][players.length - 5],
+            fascist: [2, 2, 3, 3, 4, 4][players.length - 5],
         }
 
         this.board = {
@@ -76,11 +76,11 @@ module.exports = class Game {
         switch(players.length) {
             case(5 || 6):
                 this.hitlerKnows = true;
-                return ['  ', '  ', 'PE', 'PK', 'PK', ' ']
+                return [' + ', ' + ', 'PE', 'PK', 'PK', ' + ']
             case(7 || 8):
-                return ['  ', 'PI', 'PP', 'PK', 'PK', ' ']
+                return [' + ', 'PI', 'PP', 'PK', 'PK', ' + ']
             case(9 || 10):
-                return ['PI', 'PI', 'PP', 'PK', 'PK', ' ']
+                return ['PI', 'PI', 'PP', 'PK', 'PK', ' + ']
             default:
                 break;
         }

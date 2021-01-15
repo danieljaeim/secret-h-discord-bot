@@ -5,10 +5,9 @@ const Discord = require('discord.js');
 module.exports = roleNotificationEmbed = (gamestate, edited) => new Discord.MessageEmbed()
 	.setColor('#0099ff')
 	.setTitle(`${edited ? 'Your game will begin shortly' : `Roles have been assigned by via direct message`}`) // might be nice to tag the bot here
-    .setDescription(`You've been given your roles through direct message via ${gamestate.client.user}`)
-    .addField('Liberal Victory Conditions', '• Place **5** liberal policies on the board. \n • Kill Hitler.')
-    .addField('Fascist/Hitler Victory Conditions', '• Place **6** fascist policies on the board. \n • Elect Hitler as Chancellor, *with at least 3 fascist policies on the board*.')
-    .addField('Legend for Fascist Board', `PI: President investigates a player\'s role\n PE: President examines top 3 cards on the deck 
-    PP: President picks the next president\n PK: President kills another player.`, false)
+    .setDescription(`Find your faction via ${gamestate.client.user}`)
+    .addField('Liberal Victory Conditions', '• Place down **5 Liberal Policies**. \n • *Kill* Hitler.', true)
+    .addField('Fascist/Hitler Victory Conditions', '• Place down **6 Fascist Policies**. \n • *Elect* Hitler as *Chancellor*, after placing **3 Fascist Policies**', true)
+    .setFooter(`Fascist Board Legend: PI: President investigates a player\'s role\nPE: President examines top 3 cards on the deck\nPP: President picks the next president\nPK: President kills another player.`)
     
     // maybe an indicator of the number of people currently on the game

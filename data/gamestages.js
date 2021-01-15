@@ -1,9 +1,9 @@
 const gamestages = {
-    'PCHOOSE': "President is choosing chancellor",
-    'CHVOTE': "Players are voting",
-    'PCARDS': "President is picking policy cards",
-    'CCARDS': "Chancellor is picking policy card",
-    'DISCUSSION': "Players may discuss"
+    'PCHOOSE': "President is choosing their chancellor.",
+    'CHVOTE': "Players are voting on the chancellor and president.",
+    'PCARDS': "President is picking from policy cards.",
+    'CCARDS': "Chancellor is placing a policy card on the board.",
+    'DISCUSSION': "Players may discuss freely."
 }
 
 module.exports = gamestages;
