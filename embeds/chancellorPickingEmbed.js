@@ -5,8 +5,8 @@ const Discord = require('discord.js');
 module.exports = chancellorPickingEmbed = (gamestate, supporters, opposers) => new Discord.MessageEmbed()
 .setColor('#0099ff')
 .setTitle(`*Chancellor choosing policy...*`)
-.setDescription(`Chancellor ${gamestate.chancellorCandidate} is choosing between **2** policy cards to place on the board.\n
-*Remember that President ${gamestate.president} discarded one card before...*\n`)
+.setDescription(`Chancellor ${gamestate.chancellorCandidate} has been sent **2 Policy Cards** via ${gamestate.client.user}.\n\nThe **Policy** they choose shall be placed down.` +
+`*Remember, President ${gamestate.president} discarded one card before...*\n\n`)
 .addField('Supporters ✅', supporters.length > 0 ? supporters.join('\n') : 'Nobody', true)
 .addField('Opponents ❌', opposers.length > 0 ? opposers.join('\n') : 'Nobody', true)
     

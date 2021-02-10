@@ -26,15 +26,15 @@ module.exports = class Game {
         this.discard = { liberal: 0, fascist: 0 }
 
         this.factionCount = {
-            liberal: [3, 4, 4, 5, 5, 6][players.length],
-            fascist: [2, 2, 3, 3, 4, 4][players.length],
+            liberal: [3, 4, 4, 5, 5, 6][players.length - 5],
+            fascist: [2, 2, 3, 3, 4, 4][players.length - 5],
         }
 
         this.board = {
             // there are 5 liberal slots
             liberalOnBoard: 0,
             // there are 6 fascist slots, veto unlocks once there are 5 fascist cards taken
-            fascistOnBoard: 2,
+            fascistOnBoard: 0,
             resetCounters: 0,
             fascistRuleset: this.pickFascistRuleset(players)
         }
@@ -43,8 +43,8 @@ module.exports = class Game {
          * VOTING: VOTING for president / chancellor
          */
         this.gameStage = gamestages.PCHOOSE;
-        this.presidentIndex = Math.floor(Math.random() * players.length);
-        this.president = players[this.presidentIndex];
+        this.presidentIndex = 0;
+        this.president = this.playerOrder[this.presidentIndex];
         this.chancellor = null;
         this.chancellorCandidate = undefined;
 
@@ -76,11 +76,11 @@ module.exports = class Game {
         switch(players.length) {
             case(5 || 6):
                 this.hitlerKnows = true;
-                return ['  ', '  ', 'PE', 'PK', 'PK', ' ']
+                return [' + ', ' + ', 'PE', 'PK', 'PK', ' + ']
             case(7 || 8):
-                return ['  ', 'PI', 'PP', 'PK', 'PK', ' ']
+                return [' + ', 'PI', 'PP', 'PK', 'PK', ' + ']
             case(9 || 10):
-                return ['PI', 'PI', 'PP', 'PK', 'PK', ' ']
+                return ['PI', 'PI', 'PP', 'PK', 'PK', ' + ']
             default:
                 break;
         }
@@ -115,8 +115,8 @@ module.exports = class Game {
         let hitler = fascists[Math.floor(Math.random() * fascists.length)];
 
         return {
-            liberals,
-            fascists,
+            liberals: liberals,
+            fascists: fascists,
             playerOrder,
             hitler
         }

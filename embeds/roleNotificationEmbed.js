@@ -2,13 +2,26 @@ const Discord = require('discord.js');
 
 /** secret-hitler-img */
 
-module.exports = roleNotificationEmbed = (gamestate, edited) => new Discord.MessageEmbed()
-	.setColor('#0099ff')
-	.setTitle(`${edited ? 'Your game will begin shortly' : `Roles have been assigned by via direct message`}`) // might be nice to tag the bot here
-    .setDescription(`You've been given your roles through direct message via ${gamestate.client.user}`)
-    .addField('Liberal Victory Conditions', '• Place **5** liberal policies on the board. \n • Kill Hitler.')
-    .addField('Fascist/Hitler Victory Conditions', '• Place **6** fascist policies on the board. \n • Elect Hitler as Chancellor, *with at least 3 fascist policies on the board*.')
-    .addField('Legend for Fascist Board', `PI: President investigates a player\'s role\n PE: President examines top 3 cards on the deck 
-    PP: President picks the next president\n PK: President kills another player.`, false)
+module.exports = roleNotificationEmbed = (gamestate, edited) => {
+
+    let PI = gamestate.board.fascistRuleset.indexOf('PI') > -1;
+    let PE = gamestate.board.fascistRuleset.indexOf('PE') > -1;
+    let PP = gamestate.board.fascistRuleset.indexOf('PP') > -1;
+    let PK = gamestate.board.fascistRuleset.indexOf('PK') > -1;
+
+    let footerStr = '';
+    if (PI) footerStr += `PI: President investigates a player\'s faction\n`;
+    if (PE) footerStr += `PE: President examines next 3 policies in deck\n`;
+    if (PP) footerStr += `PP: President directly decides next president\n`;
+    if (PK) footerStr += `PK: President chooses and kills another player.\n`;
+
+    return new Discord.MessageEmbed()
+        .setColor('#0099ff')
+        .setTitle(`${edited ? 'The Game has Begun!' : `**Factions** have been delivered to each player.`}`) // might be nice to tag the bot here
+        .setDescription(`Your faction, *fascist* or *liberal*, was sent through ${gamestate.client.user}`)
+        .addField('Liberal Victory Conditions', '• Place **5 Liberal Policies**. \n • *Kill* Hitler.', true)
+        .addField('Fascist/Hitler Victory Conditions', '• Place **6 Fascist Policies**. \n • *Elect* **Hitler** as *Chancellor*, after **3 Fascist Policies**', true)
+        .setFooter(footerStr)
+}
     
     // maybe an indicator of the number of people currently on the game

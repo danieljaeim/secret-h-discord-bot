@@ -13,7 +13,7 @@ module.exports = topThreeCardsEmbed = (gamestate) => {
             topCards.map(c => {
                 return {
                     name: `Card 1: ${c == "L" ? "Liberal" : "Fascist"}`,
-                    value: c == "L" ? '🟥' : '🟦',
+                    value: c != "L" ? '🟥' : '🟦',
                     inline: true
                 }
             })
