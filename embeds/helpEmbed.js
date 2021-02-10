@@ -1,6 +1,5 @@
 const Discord = require('discord.js');
 
-
 module.exports = createHelpEmbed = () => new Discord.MessageEmbed()
     .setColor('#0099ff')
     .setTitle(`Help`)

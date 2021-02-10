@@ -1,4 +1,4 @@
-import helpEmbed from '../embeds/helpEmbed';
+const helpEmbed = require('../embeds/helpEmbed');
 
 module.exports = {
 	name: 'help',
