@@ -9,8 +9,6 @@ const liberalRoleEmbed = require('../embeds/liberalRoleEmbed');
 const fascistRoleEmbed = require('../embeds/fascistRoleEmbed');
 const hitlerRoleEmbed = require('../embeds/hitlerRoleEmbed');
 
-const colorText = require('../data/colortext');
-
 const Game = require('../game');
 
 const createLobbyEmbed = (client, author, hostChannel) => {

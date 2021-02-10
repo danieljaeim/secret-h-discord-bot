@@ -1,7 +1,9 @@
+import helpEmbed from '../embeds/helpEmbed';
+
 module.exports = {
-	name: 'ping',
-	description: 'Ping!',
+	name: 'help',
+	description: 'Help',
 	execute(client, message, args) {
-		message.channel.send('Pong from ping.js');
+		message.channel.send(helpEmbed());
 	},
 };
