@@ -7,11 +7,12 @@ let randomremark = ['(very cool)']
 module.exports = createVoteChancellorEmbed = (gamestate) => {
     return {
         color: 0x0099ff,
-        title: `*The President Is Making a Decision*`,
-        description: `*${gamestate.president}*, you are president now!\n` +
-        `Select your chancellor by reacting below....\n\n`
-        + (gamestate.lastChancellor.id !== undefined && gamestate.lastChancellor.id !== gamestate.president.id ? `You may not choose ${gamestate.lastChancellor.username + 
-        (gamestate.players.length > 5 ? 'or' + gamestate.lastPresident.username : '')} as they were elected last round.` : ''),
+        title: `*Presidential Election*`,
+        description: `*${gamestate.president}* **is running for President**\n` +
+        `They may select a **Chancellor** to run with\n\n`
+        + (gamestate.lastChancellor.id !== undefined && gamestate.lastChancellor.id !== gamestate.president.id ? 
+        `**${gamestate.lastChancellor.username + 
+        (gamestate.players.length > 5 ? ' and ' + gamestate.lastPresident.username : '')} may not be re-elected.**` : ''),
         fields: gamestate.players.filter(p => p.id !== gamestate.president.id && p.id != gamestate.lastChancellor.id).map((p, i) => {            
             return {
                 name: p.username, 

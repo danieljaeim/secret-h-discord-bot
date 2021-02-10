@@ -2,8 +2,8 @@ const Discord = require('discord.js');
 
 /** secret-hitler-img */
 
-module.exports = topThreeNotifications = (gamestate) => new Discord.MessageEmbed()
+module.exports = topThreeNotifications = (gamestate, edited) => new Discord.MessageEmbed()
 	.setColor('#0099ff')
-    .setTitle(`President ${gamestate.president.username} knows the top 3 cards on the deck.`)
-    .setDescription(`** ${gamestate.president.username}, check your direct messages from ${gamestate.client.user}`)
+    .setTitle(edited ? `President ${gamestate.president.username} has been shown the **Top 3 Policies** on the deck.` : 'A Presidential Event has been triggered!')
+    .setDescription(`${gamestate.president}. the cards have been sent via ${gamestate.client.user}`)
     // maybe an indicator of the number of people currently on the game

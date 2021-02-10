@@ -27,7 +27,7 @@ const createLobbyEmbed = (client, author, hostChannel) => {
                 if (r.emoji.name == '✅' && playerlist.length >= 5 && u.username == author.username) {
                     m.delete();
                     gameStart(client, author, hostChannel, playerlist);
-                } else if (r.emoji.name == '👍') {
+                } else if (r.emoji.name == '👍' && playerlist.length < 10) {
                     let players = r.users.cache.map(r => r);
                     players = players.filter(p => p.username != 'Secret-Hitler-Bot')
                     m.edit(lobbyEmbed(author, players));
@@ -92,7 +92,6 @@ module.exports = {
         if (!message.guild.channels.cache.some((c) => c.name == hostChannelName)) {
             message.guild.channels.create(hostChannelName, { type: "text" })
                 .then((channel) => {
-                    console.log("created a new room called " + channel);
                     hostChannel = channel;
                     if (message.channel.id !== hostChannel.id) {
                         message.channel.send(startEmbed(message.author, hostChannel));

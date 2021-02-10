@@ -34,7 +34,7 @@ module.exports = class Game {
             // there are 5 liberal slots
             liberalOnBoard: 0,
             // there are 6 fascist slots, veto unlocks once there are 5 fascist cards taken
-            fascistOnBoard: 2,
+            fascistOnBoard: 0,
             resetCounters: 0,
             fascistRuleset: this.pickFascistRuleset(players)
         }
@@ -43,8 +43,8 @@ module.exports = class Game {
          * VOTING: VOTING for president / chancellor
          */
         this.gameStage = gamestages.PCHOOSE;
-        this.presidentIndex = Math.floor(Math.random() * players.length);
-        this.president = players[this.presidentIndex];
+        this.presidentIndex = 0;
+        this.president = this.playerOrder[this.presidentIndex];
         this.chancellor = null;
         this.chancellorCandidate = undefined;
 
@@ -115,8 +115,8 @@ module.exports = class Game {
         let hitler = fascists[Math.floor(Math.random() * fascists.length)];
 
         return {
-            liberals,
-            fascists,
+            liberals: liberals,
+            fascists: fascists,
             playerOrder,
             hitler
         }
