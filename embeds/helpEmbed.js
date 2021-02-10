@@ -18,6 +18,6 @@ module.exports = createHelpEmbed = () => new Discord.MessageEmbed()
             {name: "Comprehensive Rules in PDF", value: "[Rules in PDF](https://discordapp.com/oauth2/authorize?client_id=439778986050977792&scope=bot&permissions=8)", inline: true}
         ]
     )
-    .addFooter(
-        "This bot is still in development. Avoid deleting Messages or Embeds directly from the bot"
+    .setFooter(
+        "This bot is still in development. Avoid deleting Messages or Embeds directly from the bot."
     )
