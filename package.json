@@ -1,0 +1,22 @@
+{
+  "name": "secret-hitler-bot",
+  "version": "1.0.0",
+  "description": "\"A Discord Bot for playing Secret Hitler\"",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danieljaeim/secret-hitler-discord-bot.git"
+  },
+  "author": "doofboy",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/danieljaeim/secret-hitler-discord-bot/issues"
+  },
+  "homepage": "https://github.com/danieljaeim/secret-hitler-discord-bot#readme",
+  "dependencies": {
+    "discord.js": "^12.5.1"
+  }
+}
